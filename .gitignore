@@ -36,3 +36,6 @@ bin/
 obj/
 lib/
 test/test
+test/libtest
+*.txt
+*.swp

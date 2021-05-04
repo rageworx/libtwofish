@@ -21,7 +21,7 @@ LOBJS = $(LSRCS:$(DIRSRC)/%.cpp=$(DIROBJ)/%.o)
 TOBJS = $(TSRCS:$(DIRTEST)/%.cpp=$(DIROBJ)/%.o)
 
 CFLAGS += -I$(DIRSRC)
-CFLAGS += -g
+CFLAGS += -g -DDEBUG_LIBTWOFISH
 LFLAGS += -L$(DIRLIB) -ltwofish
 LAOPT  =
 

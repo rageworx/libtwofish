@@ -63,7 +63,7 @@ bool TwoFish::Initialize( uint8_t* key, uint8_t* iv, size_t keylen, size_t ivlen
         usr_keylen = keylen;
         
         if ( usr_keylen < MIN_KEY_BITS/8 )
-            usr_keylen = MIN_KEY_BITS/8 + 1;
+            usr_keylen = MIN_KEY_BITS/8;
     }
     
     if ( iv != NULL )
@@ -79,7 +79,7 @@ bool TwoFish::Initialize( uint8_t* key, uint8_t* iv, size_t keylen, size_t ivlen
             usr_ivlen = ivlen;
             
             if ( usr_ivlen < MIN_KEY_BITS/8 )
-                usr_ivlen = MIN_KEY_BITS/8 + 1;
+                usr_ivlen = MIN_KEY_BITS/8;
         }
         enc_mode = MODE_CBC;
     }
@@ -107,13 +107,15 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
         return 0;
     
     int reti = makeKey( &keyinst, DIR_ENCRYPT, 
-                        //usr_keylen * 8, (const char*)usr_key );
                         0, NULL );
+                       // usr_keylen * 8, (const char*)usr_key );
     
     if ( reti != TF_SUCCESS )
     {
+#ifdef DEBUG_LIBTWOFISH
         printf( "return failure : %d, keylen = %lu(%lu bits), %s\n", 
                 reti, usr_keylen, usr_keylen*8, (const char*)usr_key );
+#endif
         return 0;
     }
     
