@@ -49,19 +49,37 @@ bool TwoFish::Initialize( uint8_t* key, uint8_t* iv, size_t keylen, size_t ivlen
         usr_ivlen = 0;
     }
     
-    usr_key = new uint8_t[ keylen ];
-    usr_iv  = new uint8_t[ ivlen ];
+    usr_key = new uint8_t[ MAX_KEY_BITS/8 ];
+    usr_iv  = new uint8_t[ MAX_KEY_BITS/8 ];
     
     if ( usr_key != NULL )
     {
+        if ( keylen > MAX_KEY_BITS/8 )
+            keylen = MAX_KEY_BITS/8;
+        
+        memset( usr_key, 0, MAX_KEY_BITS/8 );
         memcpy( usr_key, key, keylen );
+        
+        usr_keylen = keylen;
+        
+        if ( usr_keylen < MIN_KEY_BITS/8 )
+            usr_keylen = MIN_KEY_BITS/8 + 1;
     }
     
     if ( iv != NULL )
     {
         if ( usr_iv != NULL )
         {
+            if ( ivlen > MAX_KEY_BITS/8 )
+                ivlen = MAX_KEY_BITS/8;
+            
+            memset( usr_iv, 0, MAX_KEY_BITS/8 );
             memcpy( usr_iv, iv, ivlen );
+            
+            usr_ivlen = ivlen;
+            
+            if ( usr_ivlen < MIN_KEY_BITS/8 )
+                usr_ivlen = MIN_KEY_BITS/8 + 1;
         }
         enc_mode = MODE_CBC;
     }
@@ -88,9 +106,16 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
     if ( initstate == false )
         return 0;
     
-    if ( makeKey( &keyinst, DIR_ENCRYPT, usr_keylen, (const char*)usr_key ) != TF_SUCCESS )
-        return 0;
+    int reti = makeKey( &keyinst, DIR_ENCRYPT, 
+                        //usr_keylen * 8, (const char*)usr_key );
+                        0, NULL );
     
+    if ( reti != TF_SUCCESS )
+    {
+        printf( "return failure : %d, keylen = %u(%u bits), %s\n", 
+                reti, usr_keylen, usr_keylen*8, (const char*)usr_key );
+        return 0;
+    }
     
     if ( usr_iv != NULL )
     {
@@ -114,6 +139,7 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
         {
             memset( pOutput, 0, rsz );
             memcpy( pOutput, pInput, inpsz );
+            printf( "(trying2encode)" );
             return blockEncrypt( &cipherinst, &keyinst, pOutput, rsz, pOutput  );
         }
     }

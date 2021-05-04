@@ -47,6 +47,7 @@ endif
 
 all: prepare $(TARGET)
 test: $(DIRBIN)/test
+libtest: $(DIRBIN)/libtest
 
 prepare:
 	@mkdir -p $(DIROBJ)
@@ -75,4 +76,8 @@ $(TARGET): $(LOBJS)
 $(DIRBIN)/test: $(TOBJS) $(TARGET)
 	@echo "Building test ..."
 	@$(CXX) -I$(DIRSRC) $< $(LFLAGS) $(LAOPT) -o $@
+
+$(DIRBIN)/libtest: $(TARGET) $(DIRTEST)/libtest.cpp
+	@echo "Building libtest ... "
+	@$(CXX) -I$(DIRLIB) $(DIRTEST)/libtest.cpp $(LFLAGS) $(LAOPT) -o $@
 
