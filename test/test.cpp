@@ -37,7 +37,6 @@
 #include <cstdint>
 #include <cctype>
 
-//#include "twofish.h"
 #include "tfish.h"
 
 /*
@@ -47,7 +46,7 @@
 
 typedef struct _testData
 {
-    FILE *f;                /* the file being written/read */
+    FILE*f;                 /* the file being written/read */
     int  I;                 /* test number */
     int  keySize;           /* key size in bits */
     int  gotDebugIO;        /* got any debug IO? */
@@ -276,8 +275,9 @@ uint32_t GetTimer(void)
 void TimeOps(int iterCnt)
     {
     enum { TEST_CNT = 3, BLOCK_CNT=64 };
-    int   i,j,k,n,q;
-    uint32_t t0,t1,dt[8],minT;
+    size_t   i,j,k,n,q;
+    uint32_t t0,t1,dt[8];
+    size_t   minT;
     uint32_t testTime[3][TEST_CNT];
     testData t;
     uint8_t text[BLOCK_CNT*(BLOCK_SIZE/8)];
@@ -595,7 +595,7 @@ int AES_FileIO(FILE *f,const char *s,int errOK)
 
     if (!verify)
     {
-        fprintf(f,s);
+        fprintf(f,"%s",s);
         return 0;
     }
                 
@@ -614,7 +614,7 @@ int AES_FileIO(FILE *f,const char *s,int errOK)
                     }
                 FatalError("Unexpected EOF looking for %s",s);
                 }
-            if (verbose) printf(line);
+            if (verbose) printf("%s", line);
             j=0;
         }
         if (s[i] != line[j])
@@ -733,13 +733,15 @@ void AES_PutBytes(FILE *f,const char *name,const void *p,int cnt,int fmt32)
 
     sprintf(s,"%s=",name);
     
-    for (j=0;s[j];j++) ;
-        for (i=0;i<cnt;i++)
-        {
-            s[j++]=hexTab[((uint8_t*)p)[i ^ a] >> 4 ];
-            s[j++]=hexTab[((uint8_t*)p)[i ^ a] & 0xF];
-        }
-        
+    // what for j?, queue movemnt for NULL ?
+    for (j=0;s[j];j++);
+    
+    for (i=0;i<cnt;i++)
+    {
+        s[j++]=hexTab[((uint8_t*)p)[i ^ a] >> 4 ];
+        s[j++]=hexTab[((uint8_t*)p)[i ^ a] & 0xF];
+    }
+    
     s[j++]='\n';
     s[j  ]=0;   /* terminate the string */
 
@@ -839,12 +841,12 @@ void AES_Close(testData *t)
 void DebugIO(const char *s)
 {
     if (debugTD)
-        {
+    {
         AES_FileIO(debugTD->f,s,0);
         debugTD->gotDebugIO=1;
-        }
+    }
     else
-        printf(s);
+        printf("%s",s);
 }
 
 /*
@@ -1440,8 +1442,8 @@ void GiveHelp(void)
            "          -s      ==> set initial random seed based on time\n"
            "          -sNN    ==> set initial random seed to NN\n"
            "          -tNN    ==> time performance using NN iterations\n"
-           "          -v      ==> validate files, don't generate them\n",
-           MAX_ROUNDS
+           "          -v      ==> validate files, don't generate them\n"
+           // MAX_ROUNDS
           );
     exit(1);
     }

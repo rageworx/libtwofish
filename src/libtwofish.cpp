@@ -9,7 +9,7 @@
 #include "twofish.h"
 #include "tfish.h"
 
-static bool             initstate   = false;
+static bool             initstat    = false;
 static keyInstance      keyinst     = {0};
 static cipherInstance   cipherinst  = {0};
 static uint8_t          enc_mode    = MODE_ECB;
@@ -30,7 +30,7 @@ bool TwoFish::Initialize( uint8_t* key, uint8_t* iv, size_t keylen, size_t ivlen
         memset( &keyinst, 0, sizeof( keyInstance ) );
         memset( &cipherinst, 0, sizeof( cipherInstance ) );
         enc_mode = MODE_ECB;
-        initstate = false;
+        initstat = false;
         
         return true;
     }
@@ -84,9 +84,9 @@ bool TwoFish::Initialize( uint8_t* key, uint8_t* iv, size_t keylen, size_t ivlen
         enc_mode = MODE_CBC;
     }
    
-    initstate = true;
+    initstat = true;
     
-    return initstate;
+    return initstat;
 }
 
 size_t TwoFish::GetEncodeLength( size_t srclen )
@@ -103,7 +103,7 @@ size_t TwoFish::GetEncodeLength( size_t srclen )
 
 size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
 {
-    if ( initstate == false )
+    if ( initstat == false )
         return 0;
     
     int reti = makeKey( &keyinst, DIR_ENCRYPT, 
@@ -112,7 +112,7 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
     
     if ( reti != TF_SUCCESS )
     {
-        printf( "return failure : %d, keylen = %u(%u bits), %s\n", 
+        printf( "return failure : %d, keylen = %lu(%lu bits), %s\n", 
                 reti, usr_keylen, usr_keylen*8, (const char*)usr_key );
         return 0;
     }
@@ -149,7 +149,7 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
 
 size_t TwoFish::Decode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
 {
-    if ( initstate == false )
+    if ( initstat == false )
         return 0;
 
     if ( makeKey( &keyinst, DIR_DECRYPT, usr_keylen, (const char*)usr_key ) != TF_SUCCESS )

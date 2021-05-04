@@ -31,6 +31,7 @@
 #include <cstdio>
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 
 #include "tfish.h"
 #include "tftables.h"

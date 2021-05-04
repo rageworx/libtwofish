@@ -43,7 +43,7 @@ else
 	endif
 endif
 
-.PHONY:	prepare clean
+.PHONY:	prepare clean cleantest cleanlibtest
 
 all: prepare $(TARGET)
 test: $(DIRBIN)/test
@@ -61,6 +61,12 @@ clean:
 	@rm -rf $(DIRLIB)/*.h
 	@rm -rf $(DIRBIN)/test
 
+cleantest:
+	@rm -rf $(DIRBIN)/test
+
+cleanlibtest:
+	@rm -rf $(DIRBIN)/libtest
+
 $(LOBJS): $(DIROBJ)/%.o: $(DIRSRC)/%.cpp
 	@$(CXX) $(CFLAGS) $(LAOPT) -c $< -o $@
 
@@ -69,8 +75,8 @@ $(TOBJS): $(DIROBJ)/%.o: $(DIRTEST)/%.cpp
 
 $(TARGET): $(LOBJS)
 	@echo "Generating $@ ..."
-	@$(AR) -cr $@ $^
-	@$(RL) $@
+	$(AR) -cr $@ $^
+	$(RL) $@
 	@$(CP) -f $(DIRSRC)/twofish.h $(DIRLIB)
 
 $(DIRBIN)/test: $(TOBJS) $(TARGET)
