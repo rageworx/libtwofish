@@ -124,8 +124,8 @@ void   BuildMDS();
 int    makeKey( keyInstance* key, uint8_t direction, size_t keyLen = 0, const char* keyMaterial = NULL );
 int    reKey( keyInstance *key );    /// do key schedule using modified key.keyDwords
 int    cipherInit( cipherInstance* cipher, uint8_t mode, const char* IV );
-size_t blockEncrypt( cipherInstance* cipher, keyInstance* key, const uint8_t* input, size_t inputLen, uint8_t* outBuffer );
-size_t blockDecrypt( cipherInstance* cipher, keyInstance* key, const uint8_t* input, size_t inputLen, uint8_t* outBuffer );
+int    blockEncrypt( cipherInstance* cipher, keyInstance* key, const uint8_t* input, size_t inputLen, uint8_t* outBuffer );
+int    blockDecrypt( cipherInstance* cipher, keyInstance* key, const uint8_t* input, size_t inputLen, uint8_t* outBuffer );
 
 /* API to check table usage, for use in ECB_TBL KAT */
 #define     TAB_DISABLE         0

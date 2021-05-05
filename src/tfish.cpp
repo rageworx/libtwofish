@@ -744,7 +744,6 @@ int makeKey( keyInstance* key, uint8_t direction, size_t keyLen, const char* key
     /* length must be valid */
     if ((keyLen > MAX_KEY_BITS) || (keyLen < 8) || (keyLen & 0x3F))
         return BAD_KEY_MAT;
-
     /* show that we are initialized */
     key->keySig = VALID_SIG;
 #endif /// of VALIDATE_PARMS
@@ -761,10 +760,10 @@ int makeKey( keyInstance* key, uint8_t direction, size_t keyLen, const char* key
 
     if ( (keyMaterial == NULL) || (keyMaterial[0]==0) )
         return TF_SUCCESS;
-        
+
     if ( ParseHexDword(keyLen,keyMaterial,key->key32,key->keyMaterial) )
         return BAD_KEY_MAT;
-
+    
     return reKey(key);          /* generate round subkeys */
 }
 
@@ -845,8 +844,8 @@ int cipherInit( cipherInstance* cipher, uint8_t mode, const char* IV )
             x[K^2] = ROR(x[K^2],1);                         \
             DebugDump(x,"",rounds-(R),0,0,1,0);
 #define     Encrypt2(R,id)  { EncryptRound(0,R+1,id); EncryptRound(2,R,id); }
-size_t blockEncrypt( cipherInstance* cipher, keyInstance* key, 
-                     const uint8_t* input, size_t inputLen, uint8_t* outBuffer )
+int blockEncrypt( cipherInstance* cipher, keyInstance* key, 
+                  const uint8_t* input, size_t inputLen, uint8_t* outBuffer )
 {
     /* block being encrypted */
     uint32_t x[BLOCK_SIZE/32] = {0};
@@ -986,7 +985,7 @@ size_t blockEncrypt( cipherInstance* cipher, keyInstance* key,
     if ( mode == MODE_CBC )
         BlockCopy( cipher->iv32, IV );
 
-    return inputLen;
+    return (int)inputLen;
 }
 
 /*
@@ -1021,8 +1020,8 @@ size_t blockEncrypt( cipherInstance* cipher, keyInstance* key,
             x[K^3] = ROR (x[K^3],1);                        \
 
 #define     Decrypt2(R,id)  { DecryptRound(2,R+1,id); DecryptRound(0,R,id); }
-size_t blockDecrypt( cipherInstance* cipher, keyInstance* key, 
-                     const uint8_t* input, size_t inputLen, uint8_t* outBuffer )
+int blockDecrypt( cipherInstance* cipher, keyInstance* key, 
+                  const uint8_t* input, size_t inputLen, uint8_t* outBuffer )
 {
     /* block being encrypted */
     uint32_t x[BLOCK_SIZE/32] = {0};         
