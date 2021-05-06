@@ -12,7 +12,8 @@ DIROBJ  = obj
 TARGET = $(DIRLIB)/libtwofish.a
 
 LSRCS += $(DIRSRC)/tfish.cpp
-LSRCS += $(DIRSRC)/tfdebug.cpp
+# tfdebug is for debugging -
+# LSRCS += $(DIRSRC)/tfdebug.cpp
 LSRCS += $(DIRSRC)/libtwofish.cpp
 
 TSRCS += $(DIRTEST)/test.cpp
@@ -75,8 +76,9 @@ $(TOBJS): $(DIROBJ)/%.o: $(DIRTEST)/%.cpp
 
 $(TARGET): $(LOBJS)
 	@echo "Generating $@ ..."
-	$(AR) -cr $@ $^
-	$(RL) $@
+	@rm -rf $@
+	@$(AR) -cr $@ $^
+	@$(RL) $@
 	@$(CP) -f $(DIRSRC)/twofish.h $(DIRLIB)
 
 $(DIRBIN)/test: $(TOBJS) $(TARGET)

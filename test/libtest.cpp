@@ -14,13 +14,10 @@ void prtHex( const uint8_t* p, size_t len )
     if ( p == NULL )
         return;
 
-    uint8_t* pp = (uint8_t*)p;
     for( size_t cnt=0; cnt<len; cnt++ )
     {
-        printf( "%02X", *pp );
-        pp++;
+        printf( "%02X", p[cnt] );
     }
-    printf( "\n" );
 }
 
 void genKey( uint8_t* p, size_t len )
@@ -35,7 +32,7 @@ void genRand( uint8_t* p, size_t len )
 {
     for( size_t cnt=0; cnt<len; cnt++ )
     {
-        p[cnt] = rand()%0xFF;
+        p[cnt] = rand()%0xFE + 1;
     }
 }
 
@@ -51,10 +48,26 @@ int main( int argc, char** argv )
     uint8_t* decbuff  = NULL;
     size_t   decbuffsz = 0;
     
+    printf( "libtwofish library testing, Rapahael Kim\n" );
+
+    printf( "generating keys ... " );
     genKey( testkey, testkeylen );
     genRand( testiv,  testivlen );
+    printf( "Ok.\n" );
+    fflush( stdout );
 
-    printf( "Test word : %s\n", testsrc );
+    printf( " key : " );
+    prtHex( testkey, testkeylen );
+    printf( "\n" );
+
+    printf( " iv  : " );
+    prtHex( testiv, testivlen );
+    printf( "\n" );
+    fflush( stdout );
+
+    printf( " src : %s\n", testsrc );
+    fflush( stdout );
+
     printf( "Initializing ... " );
 
     bool retb = \
@@ -71,6 +84,8 @@ int main( int argc, char** argv )
     fflush( stdout );
     
     printf( "Encoding ... " );
+    size_t buffsz = TwoFish::GetEncodeLength( sizeof( testsrc ) );
+    encbuff = new uint8_t[ buffsz ];
     encbuffsz = TwoFish::Encode( testsrc, encbuff, sizeof( testsrc ) );
     printf( "%lu bytes from %lu bytes.\n", encbuffsz, sizeof( testsrc ) );
     if ( encbuffsz == 0 )
@@ -83,9 +98,13 @@ int main( int argc, char** argv )
     printf( "Ok.\n" );
     fflush( stdout );
 
+    printf( "Encoded:\n" );
     prtHex( encbuff, encbuffsz );
+    printf( "\n" );
+    fflush( stdout );
     
     printf( "Decoding ... " );
+    decbuff = new uint8_t[ encbuffsz ];
     decbuffsz = TwoFish::Decode( encbuff, decbuff, encbuffsz );
     printf( "%lu bytes from %lu bytes.\n", decbuffsz, encbuffsz );
     if ( decbuffsz == 0 )
