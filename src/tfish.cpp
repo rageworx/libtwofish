@@ -563,7 +563,11 @@ int reKey( keyInstance* key )
 #if VALIDATE_PARMS
     #if ALIGN32
     if ((key->keyLen % 64) || (key->keyLen < MIN_KEY_BITS))
+    {
+        printf( "(Bad Key Inst, len = %u)",
+                key->keyLen );
         return BAD_KEY_INSTANCE;
+    }
     #endif
 #endif
 

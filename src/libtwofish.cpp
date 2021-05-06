@@ -24,7 +24,7 @@ static const char* str2hex( const char* p )
     memset( sstr, 0, 128 );
     size_t q = 0;
 
-    while( *p  )
+    while( *p > 0 )
     {
         snprintf( &sstr[q],3,"%02X", (uint8_t) *p );
         q+=2;
@@ -67,15 +67,15 @@ bool TwoFish::Initialize( uint8_t* key, uint8_t* iv, size_t keylen, size_t ivlen
         usr_ivlen = 0;
     }
     
-    usr_key = new uint8_t[ MAX_KEY_BITS/8 ];
-    usr_iv  = new uint8_t[ MAX_KEY_BITS/8 ];
+    usr_key = new uint8_t[ MAX_KEY_BITS/8 + 1 ];
+    usr_iv  = new uint8_t[ MAX_KEY_BITS/8 + 1 ];
     
     if ( usr_key != NULL )
     {
         if ( keylen > MAX_KEY_BITS/8 )
             keylen = MAX_KEY_BITS/8;
         
-        memset( usr_key, 0, MAX_KEY_BITS/8 );
+        memset( usr_key, 0, MAX_KEY_BITS/8 + 1 );
         memcpy( usr_key, key, keylen );
         usr_keylen = keylen;
         
@@ -90,7 +90,7 @@ bool TwoFish::Initialize( uint8_t* key, uint8_t* iv, size_t keylen, size_t ivlen
             if ( ivlen > MAX_KEY_BITS/8 )
                 ivlen = MAX_KEY_BITS/8;
             
-            memset( usr_iv, 0, MAX_KEY_BITS/8 );
+            memset( usr_iv, 0, MAX_KEY_BITS/8 + 1 );
             memcpy( usr_iv, iv, ivlen );
             
             usr_ivlen = ivlen;
@@ -137,14 +137,14 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
         return 0;
 
     const char* convkey = str2hex( (const char*)usr_key );
-    size_t convkeylen = strlen( convkey );
-    
+    size_t convkeylen = strlen( convkey ) * 2;
+ 
     int reti = makeKey( &keyinst, DIR_ENCRYPT, convkeylen, convkey );
     
     if ( reti != TF_SUCCESS )
     {
 #ifdef DEBUG_LIBTWOFISH
-        printf( "return failure : %d, keylen = %lu(%lu bits), %s\n", 
+        printf( "makeKey() failure : %d, keylen = %lu(%lu bits), %s\n", 
                 reti, usr_keylen, usr_keylen*8, (const char*)usr_key );
 #endif
         return 0;
@@ -177,13 +177,13 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
     for( size_t cnt=0; cnt<loops; cnt++ )
     {
         int reti = blockEncrypt( &cipherinst, &keyinst, 
-                                 (uint8_t*)pBin, 
+                                 (uint8_t*)pBin,
                                  BLOCK_SIZE, 
                                  (uint8_t*)pBout );
         if ( reti > 0 )
         {
-            pBin++;
-            pBout++;
+            pBin += reti/8/4;
+            pBout += reti/8/4;
             bQ += (size_t)reti/8;
         }
         else
@@ -205,14 +205,14 @@ size_t TwoFish::Decode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
         return 0;
 
     const char* convkey = str2hex( (const char*)usr_key );
-    size_t convkeylen = strlen( convkey );
+    size_t convkeylen = strlen( convkey ) * 2;
     
     int reti = makeKey( &keyinst, DIR_ENCRYPT, convkeylen, convkey );
     
     if ( reti != TF_SUCCESS )
     {
 #ifdef DEBUG_LIBTWOFISH
-        printf( "return failure : %d, keylen = %lu(%lu bits), %s\n", 
+        printf( "makeKey() failure : %d, keylen = %lu(%lu bits), %s\n", 
                 reti, usr_keylen, usr_keylen*8, (const char*)usr_key );
 #endif
         return 0;
@@ -243,14 +243,14 @@ size_t TwoFish::Decode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
     for( size_t cnt=0; cnt<loops; cnt++ )
     {
         int reti = blockDecrypt( &cipherinst, &keyinst, 
-                                 (uint8_t*)pBin, 
+                                 (uint8_t*)pBin,
                                  BLOCK_SIZE, 
                                  (uint8_t*)pBout );
         if ( reti > 0 )
         {
-            pBin++;
-            pBout++;
-            bQ += (size_t)reti/8;
+            pBin  += reti/8/4;
+            pBout += reti/8/4;
+            bQ    += (size_t)reti/8;
         }
         else
             break;
