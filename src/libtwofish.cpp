@@ -67,6 +67,7 @@ bool TwoFish::Initialize( uint8_t* key, uint8_t* iv, size_t keylen, size_t ivlen
         usr_ivlen = 0;
     }
     
+    // allocate memory for string, zero end for +1.
     usr_key = new uint8_t[ MAX_KEY_BITS/8 + 1 ];
     usr_iv  = new uint8_t[ MAX_KEY_BITS/8 + 1 ];
     
@@ -182,8 +183,8 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
                                  (uint8_t*)pBout );
         if ( reti > 0 )
         {
-            pBin += reti/8/4;
-            pBout += reti/8/4;
+            pBin += reti/8/sizeof(uint32_t);
+            pBout += reti/8/sizeof(uint32_t);
             bQ += (size_t)reti/8;
         }
         else
@@ -248,8 +249,8 @@ size_t TwoFish::Decode( uint8_t* pInput, uint8_t* pOutput, size_t inpsz )
                                  (uint8_t*)pBout );
         if ( reti > 0 )
         {
-            pBin  += reti/8/4;
-            pBout += reti/8/4;
+            pBin  += reti/8/sizeof(uint32_t);
+            pBout += reti/8/sizeof(uint32_t);
             bQ    += (size_t)reti/8;
         }
         else
