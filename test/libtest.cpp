@@ -30,9 +30,13 @@ void genKey( uint8_t* p, size_t len )
 
 void genRand( uint8_t* p, size_t len )
 {
+    srand( time(NULL) );
+    size_t s = rand()%0x0F;
+
     for( size_t cnt=0; cnt<len; cnt++ )
     {
-        p[cnt] = rand()%0xFE + 1;
+        //p[cnt] = rand()%0xFE + 1;
+        p[cnt] = (s+cnt)%0XFF + 1;
     }
 }
 
