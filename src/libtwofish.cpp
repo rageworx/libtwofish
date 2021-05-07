@@ -21,17 +21,41 @@ typedef struct
     size_t           usr_keylen;
     char*            usr_iv;
     size_t           usr_ivlen;
+    char*            usr_keyref;
+    char*            usr_ivref;
 }libTwoFishContext;
 
 #define MAX_KEY_BLEN    256
 #define L2FCTX          libTwoFishContext
 #define TOCTX(_x_)      L2FCTX* _x_ = (L2FCTX*)context
 
+// default key references -
 static char hexTab[]   = "0123456789ABCDEF";
 static char hexString[]= "0123456789ABCDEFFEDCBA987654321000112233445566778899"
                          "AABBCCDDEEFF";
+// -
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void str2hex( const uint8_t* p, char*& o )
+{
+    if ( p == NULL )
+        return;
+    
+    size_t l = strlen( (const char*)p );
+
+    o = new char[ l * 2 + 1 ];
+    
+    if ( o != NULL )
+    {
+        memset( o, 0, l * 2 + 1 );
+        
+        for( size_t cnt=0; cnt<l; cnt++ )
+        {
+            snprintf( &o[cnt*2], 3, "%02X", (uint8_t)p[cnt] );
+        }                
+    }
+}
 
 void key2hex( const uint8_t* p, size_t l, keyInstance* ki )
 {
@@ -48,7 +72,7 @@ void key2hex( const uint8_t* p, size_t l, keyInstance* ki )
         
         for( size_t cnt=0; cnt<l; cnt++ )
         {
-            snprintf( &sstr[cnt*2], 4, "%02X", (uint8_t) p[cnt] );
+            snprintf( &sstr[cnt*2], 3, "%02X", (uint8_t) p[cnt] );
         }
                 
         for( size_t cnt=0; cnt<(MAX_KEY_BITS/32); cnt++ )
@@ -135,6 +159,12 @@ TwoFish::~TwoFish()
         if ( tfctx->usr_iv != NULL )
             delete[] tfctx->usr_iv;
         
+        if ( tfctx->usr_keyref != NULL )
+            delete[] tfctx->usr_keyref;
+        
+        if ( tfctx->usr_ivref != NULL )
+            delete[] tfctx->usr_ivref;
+        
         delete tfctx;
     }
 }
@@ -180,6 +210,14 @@ bool TwoFish::Initialize( uint8_t* key, size_t keylen, const char* iv, size_t iv
                     tfctx->usr_keylen = MAX_KEY_BITS/8;
             }
             
+            if ( tfctx->usr_keyref != NULL )
+            {
+                delete[] tfctx->usr_keyref;
+                tfctx->usr_keyref = NULL;
+            }
+            
+            str2hex( tfctx->usr_key, tfctx->usr_keyref );
+            
             tfctx->enc_mode = MODE_ECB;
         }
         
@@ -196,14 +234,22 @@ bool TwoFish::Initialize( uint8_t* key, size_t keylen, const char* iv, size_t iv
 
                 memcpy( tfctx->usr_iv, iv, ivlen );
                 tfctx->usr_ivlen = ivlen;
-                // it need to fixed.
-                iv2hex( tfctx->usr_iv, tfctx->usr_ivlen, &tfctx->cipherinst );                
+                // it need to debug.
+                iv2hex( tfctx->usr_iv, tfctx->usr_ivlen, &tfctx->cipherinst );
+                
+                if ( tfctx->usr_ivref != NULL )
+                {
+                    delete[] tfctx->usr_ivref;
+                    tfctx->usr_ivref = NULL;
+                }
+                
+                str2hex( (const uint8_t*)tfctx->usr_iv, tfctx->usr_ivref );
             }
             
             tfctx->enc_mode = MODE_CBC;
         }
         
-        rinit = cipherInit( &tfctx->cipherinst, tfctx->enc_mode, hexString );
+        rinit = cipherInit( &tfctx->cipherinst, tfctx->enc_mode, tfctx->usr_ivref );
             
 #ifdef DEBUG_LIBTWOFISH        
         if ( rinit != TF_SUCCESS )
@@ -250,7 +296,7 @@ size_t TwoFish::Encode( uint8_t* pInput, uint8_t*& pOutput, size_t inpsz )
 
     key2hex( tfctx->usr_key, tfctx->usr_keylen, &tfctx->keyinst );
 
-    cipherInit( &tfctx->cipherinst, tfctx->enc_mode, hexString );
+    cipherInit( &tfctx->cipherinst, tfctx->enc_mode, tfctx->usr_ivref );
 
     int reti = makeKey( &tfctx->keyinst, DIR_ENCRYPT, 
                         tfctx->usr_keylen * 8, hexString );
@@ -317,9 +363,10 @@ size_t TwoFish::Decode( uint8_t* pInput, uint8_t*& pOutput, size_t inpsz )
 
     key2hex( tfctx->usr_key, tfctx->usr_keylen, &tfctx->keyinst );
     
-    cipherInit( &tfctx->cipherinst, tfctx->enc_mode, hexString );
+    cipherInit( &tfctx->cipherinst, tfctx->enc_mode, tfctx->usr_ivref );
      
     int reti = makeKey( &tfctx->keyinst, DIR_DECRYPT, 
+                        //tfctx->usr_keylen * 8, tfctx->usr_keyref );
                         tfctx->usr_keylen * 8, hexString );
      
     if ( reti != TF_SUCCESS )

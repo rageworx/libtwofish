@@ -43,7 +43,7 @@ int main( int argc, char** argv )
 {
     uint8_t  testkey[]  = "encrypt key set 1";
     size_t   testkeylen = strlen( (const char*)testkey );
-    char     testiv[]   = "iv set 1";
+    char     testiv[]   = "iv set 2";
     size_t   testivlen  = strlen( (const char*)testiv );
     uint8_t  testsrc[]  = "This words will be encrypted, and cannot seen before decrypted.";
     uint8_t* encbuff    = NULL;
