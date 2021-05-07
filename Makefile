@@ -12,8 +12,6 @@ DIROBJ  = obj
 TARGET = $(DIRLIB)/libtwofish.a
 
 LSRCS += $(DIRSRC)/tfish.cpp
-# tfdebug is for debugging -
-# LSRCS += $(DIRSRC)/tfdebug.cpp
 LSRCS += $(DIRSRC)/libtwofish.cpp
 
 TSRCS += $(DIRTEST)/test.cpp
@@ -21,8 +19,9 @@ TSRCS += $(DIRTEST)/test.cpp
 LOBJS = $(LSRCS:$(DIRSRC)/%.cpp=$(DIROBJ)/%.o)
 TOBJS = $(TSRCS:$(DIRTEST)/%.cpp=$(DIROBJ)/%.o)
 
+DFLAGS += -g -DDEBUG_LIBTWOFISH
 CFLAGS += -I$(DIRSRC)
-CFLAGS += -g -DDEBUG_LIBTWOFISH
+CFLAGS += $(DFLAGS)
 LFLAGS += -L$(DIRLIB) -ltwofish
 LAOPT  =
 
@@ -38,9 +37,9 @@ ifeq ($(KRNL),Darwin)
 		LAOPT += -arch x86_64 -arch arm64
 	endif
 else
-	STRIPKRNL = $(shell echo $(KRNL) | cut -d . -f1)
-	ifeq ($(STRIPKRNL),MINGW64_NT-10)
-		#LFLAGS += -s -static
+	STRIPKRNL = $(shell echo $(KRNL) | cut -d - -f1)
+	ifeq ($(STRIPKRNL),MINGW64_NT)
+		LFLAGS += -s -static
 	endif
 endif
 
@@ -72,7 +71,7 @@ $(LOBJS): $(DIROBJ)/%.o: $(DIRSRC)/%.cpp
 	@$(CXX) $(CFLAGS) $(LAOPT) -c $< -o $@
 
 $(TOBJS): $(DIROBJ)/%.o: $(DIRTEST)/%.cpp
-	@$(CXX) -I$(DIRSRC) -I$(DIRLIB) $(LAOPT) -c $< -o $@
+	@$(CXX) -I$(DIRSRC) -I$(DIRLIB) $(LAOPT) $(DFLAGS) -c $< -o $@
 
 $(TARGET): $(LOBJS)
 	@echo "Generating $@ ..."
@@ -87,5 +86,5 @@ $(DIRBIN)/test: $(TOBJS) $(TARGET)
 
 $(DIRBIN)/libtest: $(TARGET) $(DIRTEST)/libtest.cpp
 	@echo "Building libtest ... "
-	@$(CXX) -I$(DIRLIB) $(DIRTEST)/libtest.cpp $(LFLAGS) $(LAOPT) -o $@
+	@$(CXX) -I$(DIRLIB) $(DIRTEST)/libtest.cpp $(DFLAGS) $(LFLAGS) $(LAOPT) -o $@
 

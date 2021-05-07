@@ -226,7 +226,7 @@ int ParseHexDword( int bits, const char *srcTxt, uint32_t *d, char* dstTxt )
         uint8_t  b[4];
         uint32_t d[1];
     } v;
-    
+        
     v.d[0]=1;
     if (v.b[0 ^ ADDR_XOR] != 1)
         return BAD_ENDIAN;      /* make sure compile-time switch is set ok */
@@ -239,7 +239,7 @@ int ParseHexDword( int bits, const char *srcTxt, uint32_t *d, char* dstTxt )
     {
         /* case out the hexadecimal characters */
         c = srcTxt[cnt];
-        
+                
         if (dstTxt) 
             dstTxt[cnt]=c;
         
@@ -564,8 +564,7 @@ int reKey( keyInstance* key )
     #if ALIGN32
     if ((key->keyLen % 64) || (key->keyLen < MIN_KEY_BITS))
     {
-        printf( "(Bad Key Inst, len = %u)",
-                key->keyLen );
+        printf( "(Bad Key Inst, len = %u bits)", key->keyLen );
         return BAD_KEY_INSTANCE;
     }
     #endif
@@ -748,6 +747,7 @@ int makeKey( keyInstance* key, uint8_t direction, size_t keyLen, const char* key
     /* length must be valid */
     if ((keyLen > MAX_KEY_BITS) || (keyLen < 8) || (keyLen & 0x3F))
         return BAD_KEY_MAT;
+    
     /* show that we are initialized */
     key->keySig = VALID_SIG;
 #endif /// of VALIDATE_PARMS
