@@ -41,9 +41,9 @@ void genRand( char* p, size_t len )
 
 int main( int argc, char** argv )
 {
-    uint8_t  testkey[]  = "this is the key for encrypt";
+    uint8_t  testkey[]  = "encrypt key set 1";
     size_t   testkeylen = strlen( (const char*)testkey );
-    char     testiv[]   = "this is the iv";
+    char     testiv[]   = "iv set 1";
     size_t   testivlen  = strlen( (const char*)testiv );
     uint8_t  testsrc[]  = "This words will be encrypted, and cannot seen before decrypted.";
     uint8_t* encbuff    = NULL;
@@ -52,12 +52,6 @@ int main( int argc, char** argv )
     size_t   decbuffsz  = 0;
     
     printf( "libtwofish testing suit, Rapahael Kim, (C)2021\n" );
-
-    printf( "generating iv ... " );
-    memset( testiv, 0, testivlen + 1 );
-    genRand( testiv,  testivlen );
-    printf( "Ok.\n" );
-    fflush( stdout );
 
     printf( " key : " );
     prtHex( testkey, testkeylen );
@@ -72,7 +66,7 @@ int main( int argc, char** argv )
     fflush( stdout );
 
     printf( "Initializing ... " );
-    TwoFish* tf = new TwoFish( testkey, testkeylen, testiv, testivlen );
+    TwoFish* tf = new TwoFish();
     if ( tf == NULL )
     {
         printf( "Failure.\n" );
@@ -81,6 +75,8 @@ int main( int argc, char** argv )
     }
     printf( "Ok.\n" );
     fflush( stdout );
+    
+    tf->Initialize( testkey, testkeylen, testiv, testivlen );
     
     printf( "Encoding ... " );
     encbuffsz = tf->Encode( testsrc, encbuff, sizeof( testsrc ) );

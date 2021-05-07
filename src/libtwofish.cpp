@@ -110,13 +110,13 @@ TwoFish::TwoFish( uint8_t* key, size_t keylen, const char* iv, size_t ivlen )
         memset( tfcontext, 0, sizeof( L2FCTX ) );
         context = (void*)tfcontext;
 #ifdef DEBUG_LIBTWOFISH
-        bool retb = SetKey( key, keylen, iv, ivlen );
+        bool retb = Initialize( key, keylen, iv, ivlen );
         if ( retb == false )
         {
-            printf( "(warning : SetKey() failure.\n" );
+            printf( "(warning : Initialize() failure.\n" );
         }
 #else
-        SetKey( key, keylen, iv, ivlen );
+        Initialize( key, keylen, iv, ivlen );
 #endif
     }
 }
@@ -139,7 +139,7 @@ TwoFish::~TwoFish()
     }
 }
 
-bool TwoFish::SetKey( uint8_t* key, size_t keylen, const char* iv, size_t ivlen )
+bool TwoFish::Initialize( uint8_t* key, size_t keylen, const char* iv, size_t ivlen )
 {
     TOCTX( tfctx );
     

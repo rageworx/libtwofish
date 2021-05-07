@@ -21,7 +21,7 @@ class TwoFish
         ~TwoFish();
         
     public:
-        bool   SetKey( uint8_t* key = NULL, size_t keylen = 0, const char* iv = NULL, size_t ivlen = 0 );
+        bool   Initialize( uint8_t* key = NULL, size_t keylen = 0, const char* iv = NULL, size_t ivlen = 0 );
         size_t GetEncodeLength( size_t srclen );
         size_t GetBlockSize( bool isbit = true );
         size_t Encode( uint8_t* pInput, uint8_t*& pOutput, size_t inpsz );
