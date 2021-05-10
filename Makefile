@@ -40,9 +40,13 @@ ifeq ($(KRNL),Darwin)
 else
 	STRIPKRNL = $(shell echo $(KRNL) | cut -d - -f1)
 	ifeq ($(STRIPKRNL),MINGW64_NT)
+		CFLAGS += -std=c++11
 		LFLAGS += -s -static
 	endif
 endif
+
+# Let give some speed optimization at code generation
+CFLAGS += -Os
 
 .PHONY:	prepare clean cleantest cleanlibtest
 
