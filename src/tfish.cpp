@@ -53,8 +53,7 @@
 static fullSbox MDStab;        /* not actually const.  Initialized ONE time */
 static bool     needToBuildMDS = true;       /* is MDStab initialized yet? */
 
-//#define     BIG_TAB     0
-#define     BIG_TAB     1
+#define     BIG_TAB     0
 
 #if BIG_TAB
 uint8_t     bigTab[4][256][256];    /* pre-computed S-box */
