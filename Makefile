@@ -37,6 +37,8 @@ ifeq ($(KRNL),Darwin)
 	ifeq ($(shell test $(KVER) -gt 19; echo $$?),0)
 		LAOPT += -arch x86_64 -arch arm64
 	endif
+else ifeq ($(KRNL),Linux)
+	CFLAGS += -std=c++11	
 else
 	STRIPKRNL = $(shell echo $(KRNL) | cut -d - -f1)
 	ifeq ($(STRIPKRNL),MINGW64_NT)
