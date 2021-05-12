@@ -137,7 +137,7 @@ const int   numRounds[4]= {0,ROUNDS_128,ROUNDS_192,ROUNDS_256};
      *         undefined behavior at sbSet() */
     #define sbSet(N,i,J,v) \
             { size_t y=2*i+(N&1)+2*J;\
-              if ((y<=256)&&(v<256)) _sBox_[N&2][y] = MDStab[N][v]; }
+              if ((y<=256)&&(v<=256)) _sBox_[N&2][y] = MDStab[N][v]; }
     #define GetSboxKey
 #endif
 
