@@ -64,9 +64,10 @@ uint8_t     bigTab[4][256][256];    /* pre-computed S-box */
 const int   numRounds[4]= {0,ROUNDS_128,ROUNDS_192,ROUNDS_256};
 
 #if REENTRANT
-#define     _sBox_   key->sBox8x32
+    #define _sBox_      key->sBox8x32
 #else
-static      fullSbox _sBox_;        /* permuted MDStab based on keys */
+   /* permuted MDStab based on keys */
+   static  fullSbox     _sBox_;        
 #endif
 #define _sBox8_(N) (((uint8_t *) _sBox_) + (N)*256)
 
@@ -128,11 +129,16 @@ static      fullSbox _sBox_;        /* permuted MDStab based on keys */
        Note that we "interleave" 0,1, and 2,3 to avoid cache bank collisions
        in optimized assembly language.
     */
-    #define Fe32_(x,R) (_sBox_[0][2*_b(x,R  )] ^ _sBox_[0][2*_b(x,R+1)+1] ^ \
-                        _sBox_[2][2*_b(x,R+2)] ^ _sBox_[2][2*_b(x,R+3)+1])
-            /* set a single S-box value, given the input byte */
-    #define sbSet(N,i,J,v) { _sBox_[N&2][2*i+(N&1)+2*J]=MDStab[N][v]; }
-    #define GetSboxKey  
+    #define Fe32_(x,R) \
+            (_sBox_[0][2*_b(x,R  )] ^ _sBox_[0][2*_b(x,R+1)+1] ^ \
+             _sBox_[2][2*_b(x,R+2)] ^ _sBox_[2][2*_b(x,R+3)+1])
+    /* set a single S-box value, given the input byte */
+    /* FixMe : g++ 10.2 warning this preprocessor iteration 64 invokes
+     *         undefined behavior at sbSet() */
+    #define sbSet(N,i,J,v) \
+            { size_t y=2*i+(N&1)+2*J;\
+              if ((y<=256)&&(v<256)) _sBox_[N&2][y] = MDStab[N][v]; }
+    #define GetSboxKey
 #endif
 
 const       char moduleDescription[] = "Optimized C ";
@@ -629,15 +635,17 @@ int reKey( keyInstance* key )
 #if BIG_TAB
             #define one128(N,J) sbSet(N,i,J,L0[i+J])
             #define sb128(N) {                      \
-                uint8_t *qq=bigTab[N][b##N(sKey[1])];   \
+                uint8_t* qq=bigTab[N][b##N(sKey[1])];   \
                 Xor256(L0,qq,b##N(sKey[0]));        \
-                for (i=0;i<256;i+=2) { one128(N,0); one128(N,1); } }
+                for (size_t cnti=0; cnti<256; cnti+=2) \
+                { one128(N,0); one128(N,1); } }
 #else
             #define one128(N,J) sbSet(N,i,J,p8(N##1)[L0[i+J]]^k0)
             #define sb128(N) {                  \
                 Xor256(L0,p8(N##2),b##N(sKey[1]));  \
                 { register uint32_t k0=b##N(sKey[0]);   \
-                for (i=0;i<256;i+=2) { one128(N,0); one128(N,1); } } }
+                  for (size_t cnti=0; cnti<256; cnti+=2) \
+                  { one128(N,0); one128(N,1); } } }
 #endif
         #elif defined(MIN_KEY)
             #define sb128(N) Xor256(_sBox8_(N),p8(N##2),b##N(sKey[1]))
@@ -652,13 +660,15 @@ int reKey( keyInstance* key )
                 Xor256(L0,p8(N##3),b##N(sKey[2]));  \
                 { register uint32_t k0=b##N(sKey[0]);   \
                   register uint32_t k1=b##N(sKey[1]);   \
-                  for (i=0;i<256;i+=2) { one192(N,0); one192(N,1); } } }
+                  for (size_t cnti=0; cnti<256; cnti+=2) \
+                  { one192(N,0); one192(N,1); } } }
         #elif defined(MIN_KEY)
             #define one192(N,J) sbSet(N,i,J,p8(N##2)[L0[i+J]]^k1)
             #define sb192(N) {                      \
                 Xor256(L0,p8(N##3),b##N(sKey[2]));  \
                 { register uint32_t k1=b##N(sKey[1]);   \
-                  for (i=0;i<256;i+=2) { one192(N,0); one192(N,1); } } }
+                  for (size_t cnti=0; cnti<256; cnti+=2) \
+                  { one192(N,0); one192(N,1); } } }
         #endif
             sb192(0); sb192(1); sb192(2); sb192(3);
             break;
@@ -668,21 +678,25 @@ int reKey( keyInstance* key )
             #define one256(N,J) sbSet(N,i,J,p8(N##1)[p8(N##2)[L0[i+J]]^k1]^k0)
             #define sb256(N) {                                      \
                 Xor256(L1,p8(N##4),b##N(sKey[3]));                  \
-                for (i=0;i<256;i+=2) {L0[i  ]=p8(N##3)[L1[i]];      \
-                                      L0[i+1]=p8(N##3)[L1[i+1]]; }  \
+                for (size_t cnti=0; cnti<256; cnti+=2)              \
+                { L0[cnti]=p8(N##3)[L1[cnti]];                      \
+                  L0[cnti+1]=p8(N##3)[L1[cnti+1]]; }                \
                 Xor256(L0,L0,b##N(sKey[2]));                        \
-                { register uint32_t k0=b##N(sKey[0]);                   \
-                  register uint32_t k1=b##N(sKey[1]);                   \
-                  for (i=0;i<256;i+=2) { one256(N,0); one256(N,1); } } }
+                { register uint32_t k0=b##N(sKey[0]);               \
+                  register uint32_t k1=b##N(sKey[1]);               \
+                  for ( size_t cnti=0; cnti<256; cnti+=2)           \
+                  { one256(N,0); one256(N,1); } } }
         #elif defined(MIN_KEY)
             #define one256(N,J) sbSet(N,i,J,p8(N##2)[L0[i+J]]^k1)
             #define sb256(N) {                                      \
                 Xor256(L1,p8(N##4),b##N(sKey[3]));                  \
-                for (i=0;i<256;i+=2) {L0[i  ]=p8(N##3)[L1[i]];      \
-                                      L0[i+1]=p8(N##3)[L1[i+1]]; }  \
+                for (size_t cnti=0; cnti<256; cnti+=2)              \
+                { L0[cnti]=p8(N##3)[L1[cnti]];                      \
+                  L0[cnti+1]=p8(N##3)[L1[cnti+1]]; }                \
                 Xor256(L0,L0,b##N(sKey[2]));                        \
-                { register uint32_t k1=b##N(sKey[1]);                   \
-                  for (i=0;i<256;i+=2) { one256(N,0); one256(N,1); } } }
+                { register uint32_t k1=b##N(sKey[1]);               \
+                  for (size_t cnti=0; cnti<256; cnti+=2)            \
+                  { one256(N,0); one256(N,1); } } }
         #endif
             sb256(0); sb256(1); sb256(2); sb256(3);
             break;
