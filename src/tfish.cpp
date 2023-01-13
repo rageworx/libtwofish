@@ -45,6 +45,12 @@
     #define ZERO_KEY    1
 #endif
 
+#ifdef __APPLE__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wfloat-equal"
+#pragma clang diagnostic ignored "-Wparentheses"
+#endif /// of __APPLE__
+
 /*
 +*****************************************************************************
 *           Constants/Macros/Tables
