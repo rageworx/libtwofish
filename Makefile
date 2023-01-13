@@ -33,18 +33,19 @@ ARCH := $(shell uname -m)
 
 ifeq ($(KRNL),Darwin)
 	# MacOSX using llvm-g++
-	CXX = llvm-g++
-	ifeq ($(shell test $(KVER) -gt 19; echo $$?),0)
-		LAOPT += -arch x86_64 -arch arm64
-	endif
+    CXX = llvm-g++
+    ifeq ($(shell test $(KVER) -gt 19; echo $$?),0)
+        LAOPT += -arch x86_64 -arch arm64
+        LAOPT += -mmacosx-version-min=11.0
+    endif
 else ifeq ($(KRNL),Linux)
 	CFLAGS += -std=c++11	
 else
-	STRIPKRNL = $(shell echo $(KRNL) | cut -d - -f1)
-	ifeq ($(STRIPKRNL),MINGW64_NT)
-		CFLAGS += -std=c++11
-		LFLAGS += -s -static
-	endif
+    STRIPKRNL = $(shell echo $(KRNL) | cut -d - -f1)
+    ifeq ($(STRIPKRNL),MINGW64_NT)
+        CFLAGS += -std=c++11
+        LFLAGS += -s -static
+    endif
 endif
 
 # Let give some speed optimization at code generation

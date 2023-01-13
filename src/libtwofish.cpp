@@ -78,7 +78,7 @@ void key2hex( const uint8_t* p, size_t l, keyInstance* ki )
         for( size_t cnt=0; cnt<(MAX_KEY_BITS/32); cnt++ )
         {
             char tmps[16] = {0};
-            sprintf( tmps, "0xFF000000" );
+            snprintf( tmps, 16, "0xFF000000" );
             memcpy( &tmps[2], &sstr[(cnt*8)%8], 8 );
             ki->key32[cnt] = (uint32_t)strtoul( tmps, NULL, 0 );
         }
@@ -108,7 +108,7 @@ void iv2hex( const char* p, size_t l, cipherInstance* ci )
         for( size_t cnt=0; cnt<BLOCK_SIZE/32; cnt++ )
         {
             char tmps[16] = {0};
-            sprintf( tmps, "0xFF000000" );
+            snprintf( tmps, 16, "0xFF000000" );
             memcpy( &tmps[2], &sstr[(cnt*8)%8], 8 );
             ci->iv32[cnt] = (uint32_t)strtoul( tmps, NULL, 0 );
         }
