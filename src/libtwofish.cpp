@@ -123,8 +123,6 @@ void iv2hex( const char* p, size_t l, cipherInstance* ci )
 TwoFish::TwoFish( uint8_t* key, size_t keylen, const char* iv, size_t ivlen )
  : context( NULL )
 {
-    srand((unsigned) time(NULL));
-    
     // it must be rebuild MDS at once.
     BuildMDS();
 

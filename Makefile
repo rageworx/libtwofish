@@ -1,5 +1,5 @@
-CXX = g++
-AR  = ar
+CXX ?= g++
+AR  ?= ar
 RL  = ranlib
 CP  = cp -r
 
